@@ -9,6 +9,7 @@ import config
 from db import get_conn, init_db
 from services.ingest import delete_document, ingest_file, update_document
 from services.qa import answer_question, stream_answer
+from services.settings import get_settings, merge_settings, save_settings, test_config
 
 init_db()
 
@@ -25,6 +26,17 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     question: str
     history: list[dict] = []
+
+
+class ModelConfig(BaseModel):
+    base_url: str = ""
+    api_key: str = ""
+    model: str = ""
+
+
+class SettingsRequest(BaseModel):
+    embedding: ModelConfig = ModelConfig()
+    chat: ModelConfig = ModelConfig()
 
 
 @app.get("/api/health")
@@ -112,3 +124,19 @@ def chat_stream(req: ChatRequest):
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(gen(), media_type="text/event-stream")
+
+
+@app.get("/api/settings")
+def read_settings():
+    return get_settings()
+
+
+@app.put("/api/settings")
+def write_settings(req: SettingsRequest):
+    return save_settings(req.model_dump())
+
+
+@app.post("/api/settings/test")
+def settings_test(req: SettingsRequest):
+    merged = merge_settings(get_settings(), req.model_dump())
+    return test_config(merged)

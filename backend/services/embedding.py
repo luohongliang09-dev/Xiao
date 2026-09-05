@@ -1,13 +1,12 @@
-import config
-from services.client import client
+from services import settings
 
 
 def embed_texts(texts):
     """批量向量化，返回 list[list[float]]"""
     if not texts:
         return []
-    resp = client.embeddings.create(
-        model=config.EMBEDDING_MODEL,
+    resp = settings.embedding_client().embeddings.create(
+        model=settings.embedding_model(),
         input=texts,
         encoding_format="float",
     )

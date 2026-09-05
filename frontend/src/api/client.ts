@@ -121,3 +121,34 @@ export async function checkHealth() {
   const { data } = await client.get('/health')
   return data
 }
+
+export interface ModelConfig {
+  base_url: string
+  api_key: string
+  model: string
+}
+
+export interface Settings {
+  embedding: ModelConfig
+  chat: ModelConfig
+}
+
+export interface TestResult {
+  embedding: { ok: boolean; dim?: number; latency_ms?: number; error?: string }
+  chat: { ok: boolean; latency_ms?: number; error?: string }
+}
+
+export async function getSettings(): Promise<Settings> {
+  const { data } = await client.get('/settings')
+  return data
+}
+
+export async function saveSettings(settings: Settings): Promise<Settings> {
+  const { data } = await client.put('/settings', settings)
+  return data
+}
+
+export async function testSettings(settings: Settings): Promise<TestResult> {
+  const { data } = await client.post('/settings/test', settings)
+  return data
+}

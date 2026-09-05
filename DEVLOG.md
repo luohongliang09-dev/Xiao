@@ -86,3 +86,13 @@
   - sessionStorage 写入改为 300ms 防抖 + 过滤空占位消息（避免流式期间高频写）
 - **验证**：首字延迟约 1.5s（含检索），总耗时约 2.1s，42 个 token 逐字推送
 - **阻塞项**：无
+
+## 2026-09-05 · 性能设置页（可换 API / 模型）
+
+- **做了什么**：
+  - 后端新增 `services/settings.py`：运行时设置管理（读 `data/settings.json`，缺失回退 `.env`），embedding / chat 两个 OpenAI 客户端分离，`test_config()` 测连通性+耗时
+  - `embedding.py`、`qa.py` 改为动态读取设置（不再写死 config），embedding 与对话可走不同 API
+  - 新增接口：`GET/PUT /api/settings`、`POST /api/settings/test`
+  - 前端新增 `Settings.tsx` 页面 + 导航「性能设置」，两个配置卡片（Base URL / Key / 模型）+ 测试连接 + 保存
+- **注意**：更换 Embedding 模型后需重新导入文档（旧向量维度不匹配）
+- **阻塞项**：无

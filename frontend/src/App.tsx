@@ -2,12 +2,17 @@ import { Layout, Menu } from 'antd'
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Upload from './pages/Upload'
 import Chat from './pages/Chat'
+import Settings from './pages/Settings'
 
 const { Header, Content } = Layout
 
 function App() {
   const location = useLocation()
-  const selected = location.pathname.startsWith('/chat') ? 'chat' : 'upload'
+  const selected = location.pathname.startsWith('/chat')
+    ? 'chat'
+    : location.pathname.startsWith('/settings')
+      ? 'settings'
+      : 'upload'
   return (
     <Layout style={{ height: '100vh', overflow: 'hidden' }}>
       <Header style={{ display: 'flex', alignItems: 'center' }}>
@@ -21,6 +26,7 @@ function App() {
           items={[
             { key: 'upload', label: <Link to="/">导入资料</Link> },
             { key: 'chat', label: <Link to="/chat">智能问答</Link> },
+            { key: 'settings', label: <Link to="/settings">性能设置</Link> },
           ]}
           style={{ flex: 1, minWidth: 0 }}
         />
@@ -29,6 +35,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Upload />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Content>

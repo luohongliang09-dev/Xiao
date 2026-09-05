@@ -1,5 +1,5 @@
 import config
-from services.client import client
+from services import settings
 from services.embedding import embed_one
 from services.ingest import _collection
 
@@ -56,8 +56,8 @@ def answer_question(question, history=None):
     """非流式回答（保留兼容）。"""
     context, sources, docs = _retrieve(question)
     messages = _build_messages(question, history, context)
-    resp = client.chat.completions.create(
-        model=config.CHAT_MODEL,
+    resp = settings.chat_client().chat.completions.create(
+        model=settings.chat_model(),
         messages=messages,
         temperature=0.2,
     )
@@ -72,8 +72,8 @@ def stream_answer(question, history=None):
 
     yield {"type": "sources", "sources": sources}
 
-    stream = client.chat.completions.create(
-        model=config.CHAT_MODEL,
+    stream = settings.chat_client().chat.completions.create(
+        model=settings.chat_model(),
         messages=messages,
         temperature=0.2,
         stream=True,
