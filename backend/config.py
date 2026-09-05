@@ -16,6 +16,9 @@ DB_PATH = DATA_DIR / "rag.db"
 CHROMA_DIR = DATA_DIR / "chroma"
 UPLOAD_DIR = BASE_DIR / "uploads"
 
+# 问答人设文件（项目根目录 agent.md），存在则作为系统提示词
+AGENT_MD_PATH = BASE_DIR.parent / "agent.md"
+
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "500"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))
 TOP_K = int(os.getenv("TOP_K", "5"))

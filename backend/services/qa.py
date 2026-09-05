@@ -4,6 +4,20 @@ from services.embedding import embed_one
 from services.ingest import _collection
 
 
+_DEFAULT_SYSTEM = (
+    "你是知识库问答助手。请只依据下面提供的参考资料回答问题；"
+    "如果资料中没有答案，请明确说明“资料中未找到相关内容”，不要编造。"
+    "回答要简洁、准确，使用中文。"
+)
+
+
+def _load_system_prompt():
+    """加载 agent.md 人设作为系统提示词；文件不存在时回退到默认提示词。"""
+    if config.AGENT_MD_PATH.exists():
+        return config.AGENT_MD_PATH.read_text(encoding="utf-8").strip()
+    return _DEFAULT_SYSTEM
+
+
 def answer_question(question):
     q_emb = embed_one(question)
     results = _collection.query(
@@ -19,11 +33,7 @@ def answer_question(question):
         context_parts.append(f"[来源：{meta['filename']}]\n{doc}")
     context = "\n\n".join(context_parts)
 
-    system = (
-        "你是知识库问答助手。请只依据下面提供的参考资料回答问题；"
-        "如果资料中没有答案，请明确说明“资料中未找到相关内容”，不要编造。"
-        "回答要简洁、准确，使用中文。"
-    )
+    system = _load_system_prompt()
     user_msg = f"参考资料：\n{context}\n\n问题：{question}"
 
     resp = client.chat.completions.create(
