@@ -24,33 +24,23 @@ def _client():
     return settings.vision_client()
 
 
-def _render_pdf_page(data: bytes):
-    """把 PDF 第一页渲染成 PNG 图片字节。"""
+def _render_pdf_pages(data: bytes):
+    """把 PDF 每页渲染成 PNG 图片字节，返回 list[bytes]。"""
     import pymupdf as fitz
 
     doc = fitz.open(stream=data, filetype="pdf")
     try:
-        page = doc[0]
-        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
-        return pix.tobytes("png"), "image/png"
+        pages = []
+        for page in doc:
+            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+            pages.append(pix.tobytes("png"))
+        return pages
     finally:
         doc.close()
 
 
-def _to_image_bytes_and_mime(filename: str, data: bytes):
-    """返回 (图片字节, mime)。PDF 渲染成图，图片原样。"""
-    name = filename.lower()
-    if name.endswith(".pdf"):
-        return _render_pdf_page(data)
-    mime = _IMAGE_MIME.get(name[name.rfind("."):], "image/jpeg")
-    return data, mime
-
-
-def describe_and_store(filename: str, data: bytes):
-    """图片 → 视觉模型描述 → 入库。"""
-    img_bytes, mime = _to_image_bytes_and_mime(filename, data)
+def _describe_one_image(img_bytes: bytes, mime: str) -> str:
     b64 = base64.b64encode(img_bytes).decode()
-
     constraint = _load_constraint()
     resp = _client().chat.completions.create(
         model=settings.vision_model(),
@@ -65,7 +55,26 @@ def describe_and_store(filename: str, data: bytes):
             },
         ],
     )
-    description = resp.choices[0].message.content or ""
+    return resp.choices[0].message.content or ""
+
+
+def describe_and_store(filename: str, data: bytes):
+    """图片 / PDF → 视觉模型描述 → 入库。"""
+    name = filename.lower()
+    if name.endswith(".pdf"):
+        pages = _render_pdf_pages(data)
+        if not pages:
+            return {"filename": filename, "chunk_count": 0, "error": "PDF 无法渲染"}
+        if len(pages) == 1:
+            description = _describe_one_image(pages[0], "image/png")
+        else:
+            parts = []
+            for i, img in enumerate(pages, 1):
+                parts.append(f"[第 {i} 页]\n{_describe_one_image(img, 'image/png')}")
+            description = "\n\n".join(parts)
+    else:
+        mime = _IMAGE_MIME.get(name[name.rfind("."):], "image/jpeg")
+        description = _describe_one_image(data, mime)
 
     result = store_text(filename, description)
     return {"description": description, **result}

@@ -126,3 +126,13 @@
   - `vision.py` 改用 settings 动态读配置；`app.py` 的 `SettingsRequest` 加 vision；前端 `Settings.tsx` 加「视觉模型」配置卡片 + 测试状态
 - **验证**：智谱 GLM-4.6V-Flash 实测描述准确（"蓝色背景+红色圆形"、"紫色矩形"），严格遵循 vision.md 7 字段；vision 连通性测试 ok（~3.7s）
 - **阻塞项**：无
+
+## 2026-09-05 · PDF 改为视觉模型负责
+
+- **做了什么**：
+  - `app.py` 上传接口：`.pdf` 路由到 `describe_and_store`（视觉模型描述），其余（txt/md/docx）走文字解析
+  - `vision.py` 重构：抽出 `_describe_one_image`，新增 `_render_pdf_pages`（渲染所有页）；多页 PDF 逐页描述并加「第 N 页」标记
+  - 前端「导入资料」页：文档上传框去掉 `.pdf`（只收 txt/md/docx），图片上传框收 `.png/.jpg/.jpeg/.webp/.pdf`，文案改为「PDF 和图片走 AI 视觉描述」
+- **验证**：两页 PDF 逐页描述正确（每页 7 字段 + 页标记）
+- **备注**：OCR（RapidOCR）链路保留在 parsers.py，但 PDF 不再走它，暂未启用
+- **阻塞项**：无

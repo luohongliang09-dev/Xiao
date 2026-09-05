@@ -60,6 +60,9 @@ async def ingest(file: UploadFile = File(...)):
         raise HTTPException(400, "仅支持 .txt / .md / .pdf / .docx 文件")
     raw = await file.read()
     try:
+        # PDF 由视觉模型负责（描述画面），其余走文字解析
+        if name.lower().endswith(".pdf"):
+            return describe_and_store(name, raw)
         return ingest_file(name, raw)
     except Exception as e:  # noqa: BLE001
         raise HTTPException(500, f"导入失败：{e}")

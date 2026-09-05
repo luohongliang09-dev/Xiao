@@ -121,22 +121,22 @@ export default function UploadPage() {
             导入资料
           </Typography.Title>
           <Typography.Text type="secondary">
-            支持 .txt / .md / .pdf / .docx 文件，上传后自动解析、切片、向量化入库（扫描版 PDF 自动 OCR）
+            文档（.txt / .md / .docx）走文字解析；PDF 和图片走 AI 视觉描述
           </Typography.Text>
         </div>
-        <Dragger accept=".txt,.md,.pdf,.docx" showUploadList={false} beforeUpload={handleUpload} disabled={loading}>
+        <Dragger accept=".txt,.md,.docx" showUploadList={false} beforeUpload={handleUpload} disabled={loading}>
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
-          <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
-          <p className="ant-upload-hint">单个或多个 .txt / .md / .pdf / .docx 文件</p>
+          <p className="ant-upload-text">点击或拖拽文档到此区域上传</p>
+          <p className="ant-upload-hint">单个或多个 .txt / .md / .docx 文件</p>
         </Dragger>
         <Dragger accept=".png,.jpg,.jpeg,.webp,.pdf" showUploadList={false} beforeUpload={handleImageUpload} disabled={loading}>
           <p className="ant-upload-drag-icon">
             <PictureOutlined />
           </p>
-          <p className="ant-upload-text">点击或拖拽图片到此区域，AI 自动描述并入库</p>
-          <p className="ant-upload-hint">支持 .png / .jpg / .jpeg / .webp，以及图片型 PDF</p>
+          <p className="ant-upload-text">点击或拖拽图片 / PDF 到此区域，AI 视觉描述并入库</p>
+          <p className="ant-upload-hint">支持 .png / .jpg / .jpeg / .webp / .pdf</p>
         </Dragger>
         <Table rowKey="id" dataSource={docs} columns={columns} loading={loading} pagination={false} />
         <Modal
