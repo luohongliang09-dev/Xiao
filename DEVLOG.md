@@ -117,3 +117,12 @@
 - **验证**：图片 mime 转换、store_text 入库、image_url base64 链路（用硅基流动 Qwen3.5-4B 实测描述"蓝色背景+红色圆形"正确）
 - **待办**：需用户去 open.bigmodel.cn 注册，把智谱 Key 填入 `.env` 的 `VISION_API_KEY` 才能实际跑通
 - **阻塞项**：无
+
+## 2026-09-05 · 视觉模型接入设置 + 智谱 Key 实测
+
+- **做了什么**：
+  - 填入智谱 Key 到 `.env`（`VISION_API_KEY`）
+  - `settings.py` 加入 vision 段（base_url / api_key / model），新增 `vision_client()` / `vision_model()`；`test_config` 加视觉连通性测试（发 8x8 测试图）
+  - `vision.py` 改用 settings 动态读配置；`app.py` 的 `SettingsRequest` 加 vision；前端 `Settings.tsx` 加「视觉模型」配置卡片 + 测试状态
+- **验证**：智谱 GLM-4.6V-Flash 实测描述准确（"蓝色背景+红色圆形"、"紫色矩形"），严格遵循 vision.md 7 字段；vision 连通性测试 ok（~3.7s）
+- **阻塞项**：无

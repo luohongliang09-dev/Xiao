@@ -1,3 +1,5 @@
+import base64
+import io
 import json
 import time
 
@@ -6,6 +8,8 @@ from openai import OpenAI
 import config
 
 SETTINGS_FILE = config.DATA_DIR / "settings.json"
+
+_SECTIONS = ("embedding", "chat", "vision")
 
 
 def _defaults():
@@ -20,6 +24,11 @@ def _defaults():
             "api_key": config.SILICONFLOW_API_KEY,
             "model": config.CHAT_MODEL,
         },
+        "vision": {
+            "base_url": config.VISION_BASE_URL,
+            "api_key": config.VISION_API_KEY,
+            "model": config.VISION_MODEL,
+        },
     }
 
 
@@ -31,7 +40,7 @@ def get_settings():
             data = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             data = {}
-        for key in ("embedding", "chat"):
+        for key in _SECTIONS:
             if isinstance(data.get(key), dict):
                 for field in ("base_url", "api_key", "model"):
                     if data[key].get(field):
@@ -41,7 +50,7 @@ def get_settings():
 
 def merge_settings(settings, patch):
     """用 patch 中的非空字段覆盖 settings（空值视为不修改）。"""
-    for key in ("embedding", "chat"):
+    for key in _SECTIONS:
         if isinstance(patch.get(key), dict):
             for field in ("base_url", "api_key", "model"):
                 if patch[key].get(field):
@@ -65,6 +74,11 @@ def chat_client():
     return OpenAI(api_key=s["api_key"], base_url=s["base_url"])
 
 
+def vision_client():
+    s = get_settings()["vision"]
+    return OpenAI(api_key=s["api_key"], base_url=s["base_url"])
+
+
 def embedding_model():
     return get_settings()["embedding"]["model"]
 
@@ -73,9 +87,22 @@ def chat_model():
     return get_settings()["chat"]["model"]
 
 
+def vision_model():
+    return get_settings()["vision"]["model"]
+
+
+def _tiny_image_base64():
+    """生成一张 8x8 纯色 PNG，用于视觉模型连通性测试。"""
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new("RGB", (8, 8), (120, 120, 120)).save(buf, "PNG")
+    return base64.b64encode(buf.getvalue()).decode()
+
+
 def test_config(cfg):
-    """测试给定配置的可用性与耗时，返回 embedding/chat 结果。"""
-    result = {"embedding": {"ok": False}, "chat": {"ok": False}}
+    """测试给定配置的可用性与耗时，返回 embedding / chat / vision 结果。"""
+    result = {"embedding": {"ok": False}, "chat": {"ok": False}, "vision": {"ok": False}}
 
     emb = cfg.get("embedding", {}) or {}
     try:
@@ -102,5 +129,27 @@ def test_config(cfg):
         result["chat"] = {"ok": True, "latency_ms": int((time.time() - t) * 1000)}
     except Exception as e:  # noqa: BLE001
         result["chat"]["error"] = str(e)
+
+    vis = cfg.get("vision", {}) or {}
+    try:
+        c = OpenAI(api_key=vis.get("api_key"), base_url=vis.get("base_url"))
+        b64 = _tiny_image_base64()
+        t = time.time()
+        c.chat.completions.create(
+            model=vis.get("model"),
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}},
+                        {"type": "text", "text": "ok"},
+                    ],
+                }
+            ],
+            max_tokens=10,
+        )
+        result["vision"] = {"ok": True, "latency_ms": int((time.time() - t) * 1000)}
+    except Exception as e:  # noqa: BLE001
+        result["vision"]["error"] = str(e)
 
     return result

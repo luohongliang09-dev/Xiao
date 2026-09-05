@@ -1,8 +1,7 @@
 import base64
 
-from openai import OpenAI
-
 import config
+from services import settings
 from services.ingest import store_text
 
 # 支持的图片类型 → mime
@@ -22,7 +21,7 @@ def _load_constraint():
 
 
 def _client():
-    return OpenAI(api_key=config.VISION_API_KEY, base_url=config.VISION_BASE_URL)
+    return settings.vision_client()
 
 
 def _render_pdf_page(data: bytes):
@@ -54,7 +53,7 @@ def describe_and_store(filename: str, data: bytes):
 
     constraint = _load_constraint()
     resp = _client().chat.completions.create(
-        model=config.VISION_MODEL,
+        model=settings.vision_model(),
         messages=[
             {"role": "system", "content": constraint},
             {

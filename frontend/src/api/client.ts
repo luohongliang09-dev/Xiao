@@ -131,11 +131,13 @@ export interface ModelConfig {
 export interface Settings {
   embedding: ModelConfig
   chat: ModelConfig
+  vision: ModelConfig
 }
 
 export interface TestResult {
   embedding: { ok: boolean; dim?: number; latency_ms?: number; error?: string }
   chat: { ok: boolean; latency_ms?: number; error?: string }
+  vision: { ok: boolean; latency_ms?: number; error?: string }
 }
 
 export async function getSettings(): Promise<Settings> {

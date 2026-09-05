@@ -56,6 +56,7 @@ function ConfigSection({ title, desc, value, onChange }: SectionProps) {
 export default function SettingsPage() {
   const [embedding, setEmbedding] = useState<ModelConfig>({ base_url: '', api_key: '', model: '' })
   const [chat, setChat] = useState<ModelConfig>({ base_url: '', api_key: '', model: '' })
+  const [vision, setVision] = useState<ModelConfig>({ base_url: '', api_key: '', model: '' })
   const [testing, setTesting] = useState(false)
   const [saving, setSaving] = useState(false)
   const [result, setResult] = useState<TestResult | null>(null)
@@ -65,6 +66,7 @@ export default function SettingsPage() {
       .then((s) => {
         setEmbedding(s.embedding)
         setChat(s.chat)
+        setVision(s.vision)
       })
       .catch(() => {})
   }, [])
@@ -72,7 +74,7 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      await saveSettings({ embedding, chat })
+      await saveSettings({ embedding, chat, vision })
       message.success('已保存，下次问答即生效')
     } catch (e: any) {
       message.error(`保存失败：${e?.response?.data?.detail || e.message}`)
@@ -85,7 +87,7 @@ export default function SettingsPage() {
     setTesting(true)
     setResult(null)
     try {
-      setResult(await testSettings({ embedding, chat }))
+      setResult(await testSettings({ embedding, chat, vision }))
     } catch (e: any) {
       message.error(`测试失败：${e?.response?.data?.detail || e.message}`)
     } finally {
@@ -93,7 +95,7 @@ export default function SettingsPage() {
     }
   }
 
-  const renderStatus = (key: 'embedding' | 'chat', label: string) => {
+  const renderStatus = (key: 'embedding' | 'chat' | 'vision', label: string) => {
     if (!result) return null
     const r = result[key]
     const extra = r.latency_ms != null ? ` · ${r.latency_ms}ms` : ''
@@ -116,7 +118,7 @@ export default function SettingsPage() {
       <div style={{ maxWidth: 760, margin: '0 auto', padding: 24 }}>
         <Typography.Title level={4}>性能设置</Typography.Title>
         <Typography.Paragraph type="secondary">
-          可分别更换 Embedding（向量化）与对话模型所使用的 API 和模型。保存后立即生效，无需重启。
+          可分别更换 Embedding（向量化）、对话模型、视觉模型所使用的 API 和模型。保存后立即生效，无需重启。
         </Typography.Paragraph>
         <Alert
           type="warning"
@@ -137,6 +139,12 @@ export default function SettingsPage() {
           value={chat}
           onChange={setChat}
         />
+        <ConfigSection
+          title="视觉模型（图片描述）"
+          desc="负责识别图片内容并生成结构化描述。"
+          value={vision}
+          onChange={setVision}
+        />
 
         <Space>
           <Button type="primary" onClick={handleTest} loading={testing}>
@@ -150,6 +158,7 @@ export default function SettingsPage() {
         <div style={{ marginTop: 12 }}>
           {renderStatus('embedding', 'Embedding')}
           {renderStatus('chat', '对话')}
+          {renderStatus('vision', '视觉')}
         </div>
       </div>
     </div>

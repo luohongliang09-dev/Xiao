@@ -38,6 +38,7 @@ class ModelConfig(BaseModel):
 class SettingsRequest(BaseModel):
     embedding: ModelConfig = ModelConfig()
     chat: ModelConfig = ModelConfig()
+    vision: ModelConfig = ModelConfig()
 
 
 @app.get("/api/health")
