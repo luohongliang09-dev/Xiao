@@ -11,6 +11,11 @@ SILICONFLOW_BASE_URL = os.getenv("SILICONFLOW_BASE_URL", "https://api.siliconflo
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
 CHAT_MODEL = os.getenv("CHAT_MODEL", "Qwen/Qwen3-8B")
 
+# 视觉模型（图片描述，智谱 GLM-4.6V-Flash 永久免费）
+VISION_BASE_URL = os.getenv("VISION_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
+VISION_API_KEY = os.getenv("VISION_API_KEY", "")
+VISION_MODEL = os.getenv("VISION_MODEL", "glm-4.6v-flash")
+
 DATA_DIR = BASE_DIR / "data"
 DB_PATH = DATA_DIR / "rag.db"
 CHROMA_DIR = DATA_DIR / "chroma"
@@ -18,6 +23,8 @@ UPLOAD_DIR = BASE_DIR / "uploads"
 
 # 问答人设文件（项目根目录 agent.md），存在则作为系统提示词
 AGENT_MD_PATH = BASE_DIR.parent / "agent.md"
+# 图片描述约束文件（项目根目录 vision.md）
+VISION_MD_PATH = BASE_DIR.parent / "vision.md"
 
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "500"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))

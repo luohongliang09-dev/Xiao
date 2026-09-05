@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Button, Popconfirm, Space, Table, Typography, Upload, message } from 'antd'
-import { InboxOutlined } from '@ant-design/icons'
+import { Button, Modal, Popconfirm, Space, Table, Typography, Upload, message } from 'antd'
+import { InboxOutlined, PictureOutlined } from '@ant-design/icons'
 import {
   Document,
   deleteDocument,
+  describeImage,
   ingestFile,
   listDocuments,
   updateDocument,
@@ -14,6 +15,7 @@ const { Dragger } = Upload
 export default function UploadPage() {
   const [docs, setDocs] = useState<Document[]>([])
   const [loading, setLoading] = useState(false)
+  const [descResult, setDescResult] = useState<{ filename: string; description: string } | null>(null)
 
   const refresh = async () => {
     try {
@@ -31,10 +33,29 @@ export default function UploadPage() {
     setLoading(true)
     try {
       const res = await ingestFile(file)
-      message.success(`导入成功：${res.filename}（${res.chunk_count} 个切片）`)
+      if (res.error) {
+        message.warning(`导入失败：${res.error}`)
+      } else {
+        message.success(`导入成功：${res.filename}（${res.chunk_count} 个切片）`)
+      }
       await refresh()
     } catch (e: any) {
       message.error(`导入失败：${e?.response?.data?.detail || e.message}`)
+    } finally {
+      setLoading(false)
+    }
+    return false
+  }
+
+  const handleImageUpload = async (file: File) => {
+    setLoading(true)
+    try {
+      const res = await describeImage(file)
+      setDescResult({ filename: res.filename, description: res.description })
+      message.success(`已识别并入库：${res.filename}`)
+      await refresh()
+    } catch (e: any) {
+      message.error(`识别失败：${e?.response?.data?.detail || e.message}`)
     } finally {
       setLoading(false)
     }
@@ -110,7 +131,24 @@ export default function UploadPage() {
           <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
           <p className="ant-upload-hint">单个或多个 .txt / .md / .pdf / .docx 文件</p>
         </Dragger>
+        <Dragger accept=".png,.jpg,.jpeg,.webp,.pdf" showUploadList={false} beforeUpload={handleImageUpload} disabled={loading}>
+          <p className="ant-upload-drag-icon">
+            <PictureOutlined />
+          </p>
+          <p className="ant-upload-text">点击或拖拽图片到此区域，AI 自动描述并入库</p>
+          <p className="ant-upload-hint">支持 .png / .jpg / .jpeg / .webp，以及图片型 PDF</p>
+        </Dragger>
         <Table rowKey="id" dataSource={docs} columns={columns} loading={loading} pagination={false} />
+        <Modal
+          title={descResult?.filename}
+          open={!!descResult}
+          onCancel={() => setDescResult(null)}
+          footer={null}
+        >
+          <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }}>
+            {descResult?.description}
+          </Typography.Paragraph>
+        </Modal>
       </div>
     </div>
   )

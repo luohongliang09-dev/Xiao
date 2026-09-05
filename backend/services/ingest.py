@@ -92,6 +92,23 @@ def ingest_file(filename, raw_bytes):
     return {"filename": filename, "document_id": doc_id, "chunk_count": len(chunks)}
 
 
+def store_text(filename, text):
+    """把一段文本作为文档入库（用于图片描述等非文件解析产生的内容）。"""
+    chunks = split_text(text)
+    if not chunks:
+        return {"filename": filename, "chunk_count": 0, "error": "没有可入库的文本内容"}
+
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO documents (filename, chunk_count) VALUES (?, ?)", (filename, len(chunks)))
+    doc_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+
+    _store_chunks(doc_id, filename, chunks)
+    return {"filename": filename, "document_id": doc_id, "chunk_count": len(chunks)}
+
+
 def delete_document(doc_id):
     """删除文档及其全部切片。"""
     removed = _remove_chunks(doc_id)

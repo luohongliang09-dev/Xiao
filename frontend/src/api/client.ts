@@ -152,3 +152,18 @@ export async function testSettings(settings: Settings): Promise<TestResult> {
   const { data } = await client.post('/settings/test', settings)
   return data
 }
+
+export interface DescribeResult {
+  description: string
+  filename: string
+  document_id?: number
+  chunk_count: number
+  error?: string
+}
+
+export async function describeImage(file: File): Promise<DescribeResult> {
+  const form = new FormData()
+  form.append('file', file)
+  const { data } = await client.post('/vision/describe', form)
+  return data
+}

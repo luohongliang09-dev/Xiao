@@ -10,6 +10,7 @@ from db import get_conn, init_db
 from services.ingest import delete_document, ingest_file, update_document
 from services.qa import answer_question, stream_answer
 from services.settings import get_settings, merge_settings, save_settings, test_config
+from services.vision import describe_and_store
 
 init_db()
 
@@ -144,3 +145,15 @@ def write_settings(req: SettingsRequest):
 def settings_test(req: SettingsRequest):
     merged = merge_settings(get_settings(), req.model_dump())
     return test_config(merged)
+
+
+@app.post("/api/vision/describe")
+async def vision_describe(file: UploadFile = File(...)):
+    name = file.filename or "unnamed"
+    if not name.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".pdf")):
+        raise HTTPException(400, "仅支持图片（.png / .jpg / .jpeg / .webp）或图片型 PDF")
+    raw = await file.read()
+    try:
+        return describe_and_store(name, raw)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(500, f"图片描述失败：{e}")

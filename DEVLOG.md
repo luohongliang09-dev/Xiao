@@ -106,3 +106,14 @@
   - 新增依赖：pymupdf / python-docx / rapidocr-onnxruntime（OCR 模型内置，无需联网下载、无需系统安装）
 - **验证**：文字版 PDF 中文抽取正确；扫描版 OCR 三行中文全部识别准确；DOCX 段落+表格正确；端到端上传+检索通过
 - **阻塞项**：无
+
+## 2026-09-05 · 图片描述（视觉模型 + 约束文件入库）
+
+- **做了什么**：
+  - 新增 `vision.md`（项目根目录，通用图片描述约束：主体/外貌/穿着/场景/画风/氛围/图内文字，铁律禁止编造），热更新
+  - `config.py` 加 VISION_*（智谱 GLM-4.6V-Flash 默认）；`services/vision.py` 的 `describe_and_store()`：图片/图片型PDF → 渲染 → base64 → 视觉模型描述 → `store_text` 入库
+  - `ingest.py` 新增 `store_text()`（把任意文本作为文档入库）
+  - 新增接口 `POST /api/vision/describe`；前端「导入资料」页加图片上传框 + 描述结果弹窗；顺带修掉「导入成功 0 切片」误导提示（现在会正确提示 error）
+- **验证**：图片 mime 转换、store_text 入库、image_url base64 链路（用硅基流动 Qwen3.5-4B 实测描述"蓝色背景+红色圆形"正确）
+- **待办**：需用户去 open.bigmodel.cn 注册，把智谱 Key 填入 `.env` 的 `VISION_API_KEY` 才能实际跑通
+- **阻塞项**：无
