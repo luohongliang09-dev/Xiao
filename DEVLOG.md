@@ -36,6 +36,14 @@
 - **下一步**：PDF/Word 导入、会话历史、流式输出
 - **阻塞项**：无
 
+## 2026-09-05 · 初始化 Git 版本管理
+
+- **做了什么**：
+  - `git init -b main` 初始化仓库，首次提交（commit `ad07504`，26 文件）
+  - 完善 `.gitignore`：排除 `.env`（Key）、`backend/data/`（运行数据）、`.venv`、`node_modules`、`dist`、TS 构建产物
+  - 用户资料 `资料/碧蓝航线.md` 已纳入版本管理
+- **阻塞项**：无
+
 ## 关键记录（供后续维护）
 
 - 后端依赖首次安装卡在 pypi 官方源（chromadb 依赖树重），**必须用清华镜像**：`pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple`
