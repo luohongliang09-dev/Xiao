@@ -96,3 +96,13 @@
   - 前端新增 `Settings.tsx` 页面 + 导航「性能设置」，两个配置卡片（Base URL / Key / 模型）+ 测试连接 + 保存
 - **注意**：更换 Embedding 模型后需重新导入文档（旧向量维度不匹配）
 - **阻塞项**：无
+
+## 2026-09-05 · PDF / Word 导入（含扫描版 OCR）
+
+- **做了什么**：
+  - 新增 `services/parsers.py`：`parse_document()` 按扩展名分发；PDF 用 PyMuPDF 抽文字，抽不到（扫描版）自动降级 OCR（PyMuPDF 渲染成图 + RapidOCR 识别）；DOCX 用 python-docx（段落 + 表格）
+  - `ingest.py` 移除 `_decode`，改用 `parse_document`；上传白名单加 `.pdf` `.docx`；旧版 `.doc` 给友好提示「请另存为 .docx」
+  - 前端上传框 accept 与提示文案同步更新
+  - 新增依赖：pymupdf / python-docx / rapidocr-onnxruntime（OCR 模型内置，无需联网下载、无需系统安装）
+- **验证**：文字版 PDF 中文抽取正确；扫描版 OCR 三行中文全部识别准确；DOCX 段落+表格正确；端到端上传+检索通过
+- **阻塞项**：无

@@ -77,7 +77,7 @@ export default function UploadPage() {
       key: 'action',
       render: (_: unknown, record: Document) => (
         <Space>
-          <Upload accept=".txt,.md" showUploadList={false} beforeUpload={(f) => handleUpdate(record.id, f)}>
+          <Upload accept=".txt,.md,.pdf,.docx" showUploadList={false} beforeUpload={(f) => handleUpdate(record.id, f)}>
             <Button size="small" type="link">
               更新
             </Button>
@@ -100,15 +100,15 @@ export default function UploadPage() {
             导入资料
           </Typography.Title>
           <Typography.Text type="secondary">
-            支持 .txt / .md 文件，上传后自动解析、切片、向量化入库
+            支持 .txt / .md / .pdf / .docx 文件，上传后自动解析、切片、向量化入库（扫描版 PDF 自动 OCR）
           </Typography.Text>
         </div>
-        <Dragger accept=".txt,.md" showUploadList={false} beforeUpload={handleUpload} disabled={loading}>
+        <Dragger accept=".txt,.md,.pdf,.docx" showUploadList={false} beforeUpload={handleUpload} disabled={loading}>
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
           <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
-          <p className="ant-upload-hint">单个或多个 .txt / .md 文件</p>
+          <p className="ant-upload-hint">单个或多个 .txt / .md / .pdf / .docx 文件</p>
         </Dragger>
         <Table rowKey="id" dataSource={docs} columns={columns} loading={loading} pagination={false} />
       </div>

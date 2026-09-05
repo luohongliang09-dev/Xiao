@@ -4,3 +4,6 @@ chromadb
 openai
 python-multipart
 python-dotenv
+pymupdf
+python-docx
+rapidocr-onnxruntime

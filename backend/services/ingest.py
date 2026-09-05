@@ -5,6 +5,7 @@ import chromadb
 import config
 from db import get_conn
 from services.embedding import embed_texts
+from services.parsers import parse_document
 
 _chroma_client = chromadb.PersistentClient(path=str(config.CHROMA_DIR))
 _collection = _chroma_client.get_or_create_collection(
@@ -41,15 +42,6 @@ def split_text(text, chunk_size=config.CHUNK_SIZE, overlap=config.CHUNK_OVERLAP)
     return [c for c in chunks if c.strip()]
 
 
-def _decode(raw: bytes):
-    for enc in ("utf-8", "utf-8-sig", "gbk"):
-        try:
-            return raw.decode(enc)
-        except UnicodeDecodeError:
-            continue
-    return raw.decode("utf-8", errors="ignore")
-
-
 def _store_chunks(doc_id, filename, chunks):
     """向量化并写入 ChromaDB + SQLite chunks 表。"""
     embeddings = embed_texts(chunks)
@@ -84,7 +76,7 @@ def _remove_chunks(doc_id):
 
 def ingest_file(filename, raw_bytes):
     """新建文档并入库。"""
-    text = _decode(raw_bytes)
+    text = parse_document(filename, raw_bytes)
     chunks = split_text(text)
     if not chunks:
         return {"filename": filename, "chunk_count": 0, "error": "文件没有可解析的文本内容"}
@@ -118,7 +110,7 @@ def update_document(doc_id, filename, raw_bytes):
     if not exists:
         return {"error": "文档不存在", "document_id": doc_id}
 
-    text = _decode(raw_bytes)
+    text = parse_document(filename, raw_bytes)
     chunks = split_text(text)
     if not chunks:
         return {"error": "文件没有可解析的文本内容", "document_id": doc_id}

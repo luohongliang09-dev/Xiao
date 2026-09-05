@@ -10,7 +10,8 @@
 | 数据库 | SQLite |
 | 向量库 | ChromaDB（本地持久化） |
 | 向量化 | 硅基流动 `BAAI/bge-m3`（免费） |
-| 生成 | 硅基流动 `Qwen/Qwen3-8B`（免费） |
+| 生成 | 硅基流动 `THUDM/GLM-4-9B-0414`（免费） |
+| 文档解析 | TXT / Markdown / PDF（PyMuPDF）/ Word（python-docx）/ 扫描版 OCR（RapidOCR） |
 | 前端 | React + TypeScript + Vite + Ant Design |
 
 ## 目录结构
@@ -66,9 +67,10 @@ npm run dev
 
 ## 使用
 
-1. **导入资料**：上传 `.txt` / `.md` 文件，自动解析、切片、向量化入库
+1. **导入资料**：上传 `.txt` / `.md` / `.pdf` / `.docx` 文件，自动解析、切片、向量化入库（扫描版 PDF 自动 OCR）
 2. **智能问答**：输入问题，返回答案 + 「来源：xxx」引用标签
 3. **更新/删除**：文档列表每行有「更新」和「删除」按钮——更新可重新上传同名文件覆盖旧内容，删除会同时清除该文档的全部切片
+4. **性能设置**：可分别更换 Embedding / 对话模型的 API 和模型，支持连通性测试
 
 ## API 接口
 

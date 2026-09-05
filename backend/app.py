@@ -52,8 +52,10 @@ def health():
 @app.post("/api/ingest")
 async def ingest(file: UploadFile = File(...)):
     name = file.filename or "unnamed"
-    if not name.lower().endswith((".txt", ".md")):
-        raise HTTPException(400, "仅支持 .txt / .md 文件")
+    if name.lower().endswith(".doc"):
+        raise HTTPException(400, "旧版 .doc 格式不支持，请另存为 .docx 后上传")
+    if not name.lower().endswith((".txt", ".md", ".pdf", ".docx")):
+        raise HTTPException(400, "仅支持 .txt / .md / .pdf / .docx 文件")
     raw = await file.read()
     try:
         return ingest_file(name, raw)
@@ -74,8 +76,10 @@ def list_documents():
 @app.put("/api/documents/{doc_id}")
 async def update_doc(doc_id: int, file: UploadFile = File(...)):
     name = file.filename or "unnamed"
-    if not name.lower().endswith((".txt", ".md")):
-        raise HTTPException(400, "仅支持 .txt / .md 文件")
+    if name.lower().endswith(".doc"):
+        raise HTTPException(400, "旧版 .doc 格式不支持，请另存为 .docx 后上传")
+    if not name.lower().endswith((".txt", ".md", ".pdf", ".docx")):
+        raise HTTPException(400, "仅支持 .txt / .md / .pdf / .docx 文件")
     raw = await file.read()
     try:
         result = update_document(doc_id, name, raw)
