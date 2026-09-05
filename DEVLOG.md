@@ -77,3 +77,12 @@
   - `Chat.tsx` 重构样式：问答页容器设为背景图（cover/center），所有卡片（用户消息、秘书舰回复、空状态提示、输入框）改为半透明 + `backdrop-filter: blur(10px)` 毛玻璃效果
 - **效果**：背景板感觉，聊天框透明浮在壁纸之上
 - **阻塞项**：无
+
+## 2026-09-05 · 流式输出（打字机效果）
+
+- **做了什么**：
+  - 后端 `qa.py` 新增 `stream_answer()` 生成器（先 sources、再逐 token delta、最后 done）；`app.py` 新增 `POST /api/chat/stream`（SSE，`text/event-stream`）
+  - 前端 `client.ts` 新增 `askQuestionStream()`（fetch 读流解析 SSE）；`Chat.tsx` 改用流式：空助手气泡先显示小 spinner，token 到达后逐字填充
+  - sessionStorage 写入改为 300ms 防抖 + 过滤空占位消息（避免流式期间高频写）
+- **验证**：首字延迟约 1.5s（含检索），总耗时约 2.1s，42 个 token 逐字推送
+- **阻塞项**：无

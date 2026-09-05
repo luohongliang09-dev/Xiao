@@ -1,11 +1,14 @@
+import json
+
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 import config
 from db import get_conn, init_db
 from services.ingest import delete_document, ingest_file, update_document
-from services.qa import answer_question
+from services.qa import answer_question, stream_answer
 
 init_db()
 
@@ -94,3 +97,18 @@ def chat(req: ChatRequest):
     conn.commit()
     conn.close()
     return result
+
+
+@app.post("/api/chat/stream")
+def chat_stream(req: ChatRequest):
+    if not req.question.strip():
+        raise HTTPException(400, "问题不能为空")
+
+    def gen():
+        try:
+            for evt in stream_answer(req.question, req.history):
+                yield f"data: {json.dumps(evt, ensure_ascii=False)}\n\n"
+        except Exception as e:  # noqa: BLE001
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(gen(), media_type="text/event-stream")

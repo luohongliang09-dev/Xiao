@@ -3,7 +3,7 @@ import { Button, Card, Input, Space, Spin, Tag, Typography } from 'antd'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
-import { askQuestion } from '../api/client'
+import { askQuestionStream } from '../api/client'
 import { CommanderAvatar, ShipGirlAvatar } from '../components/PixelAvatar'
 
 interface Msg {
@@ -40,11 +40,16 @@ export default function ChatPage() {
   }, [messages, loading])
 
   useEffect(() => {
-    try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
-    } catch {
-      // 存储失败时忽略
-    }
+    const t = setTimeout(() => {
+      try {
+        // 过滤掉尚未生成内容的空占位消息，并防抖写入
+        const cleaned = messages.filter((m) => m.content !== '')
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned))
+      } catch {
+        // 存储失败时忽略
+      }
+    }, 300)
+    return () => clearTimeout(t)
   }, [messages])
 
   const send = async () => {
@@ -52,16 +57,42 @@ export default function ChatPage() {
     if (!q) return
     setInput('')
     const history = messages.map((m) => ({ role: m.role, content: m.content }))
-    setMessages((m) => [...m, { role: 'user', content: q }])
+    // 先加入用户消息 + 空的助手占位气泡
+    setMessages((m) => [...m, { role: 'user', content: q }, { role: 'assistant', content: '' }])
     setLoading(true)
+
+    let acc = ''
+
+    const patchLast = (fn: (last: Msg) => Msg) => {
+      setMessages((m) => {
+        const copy = [...m]
+        const last = copy[copy.length - 1]
+        if (last && last.role === 'assistant') {
+          copy[copy.length - 1] = fn(last)
+        }
+        return copy
+      })
+    }
+
     try {
-      const res = await askQuestion(q, history)
-      setMessages((m) => [...m, { role: 'assistant', content: res.answer, sources: res.sources }])
+      await askQuestionStream(q, history, {
+        onDelta: (text) => {
+          acc += text
+          patchLast((last) => ({ ...last, content: acc }))
+        },
+        onSources: (s) => {
+          patchLast((last) => ({ ...last, sources: s }))
+        },
+        onDone: () => {},
+        onError: (msg) => {
+          patchLast((last) => ({ ...last, content: last.content || `出错了：${msg}` }))
+        },
+      })
     } catch (e: any) {
-      setMessages((m) => [
-        ...m,
-        { role: 'assistant', content: `出错了：${e?.response?.data?.detail || e.message}` },
-      ])
+      patchLast((last) => ({
+        ...last,
+        content: last.content || `出错了：${e?.message || e}`,
+      }))
     } finally {
       setLoading(false)
     }
@@ -128,7 +159,11 @@ export default function ChatPage() {
                 styles={{ body: { padding: 12 } }}
               >
                 <div className="md-content">
-                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{m.content}</ReactMarkdown>
+                  {m.content ? (
+                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{m.content}</ReactMarkdown>
+                  ) : (
+                    <Spin size="small" />
+                  )}
                 </div>
                 {m.sources && m.sources.length > 0 && (
                   <div style={{ marginTop: 8 }}>
@@ -142,7 +177,6 @@ export default function ChatPage() {
               </Card>
             </div>
           ))}
-          {loading && <Spin style={{ marginLeft: 12 }} />}
           <div ref={bottomRef} />
         </div>
         <div
