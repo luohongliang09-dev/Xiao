@@ -1,0 +1,18 @@
+/* 透明滚动条（配合深色背景使用） */
+.transparent-scroll {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+}
+.transparent-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.transparent-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.transparent-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 3px;
+}
+.transparent-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.6);
+}

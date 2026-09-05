@@ -1,6 +1,7 @@
 import { CSSProperties, useEffect, useRef, useState } from 'react'
 import { Button, Card, Input, Space, Spin, Tag, Typography } from 'antd'
 import { askQuestion } from '../api/client'
+import { CommanderAvatar, ShipGirlAvatar } from '../components/PixelAvatar'
 
 interface Msg {
   role: 'user' | 'assistant'
@@ -66,7 +67,7 @@ export default function ChatPage() {
           padding: '16px 24px',
         }}
       >
-        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 16, minHeight: 0 }}>
+        <div className="transparent-scroll" style={{ flex: 1, overflowY: 'auto', paddingBottom: 16, minHeight: 0 }}>
           {messages.length === 0 && (
             <div
               style={{
@@ -87,12 +88,15 @@ export default function ChatPage() {
               style={{
                 marginBottom: 16,
                 display: 'flex',
-                justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
+                gap: 10,
+                alignItems: 'flex-start',
+                flexDirection: m.role === 'user' ? 'row-reverse' : 'row',
               }}
             >
+              {m.role === 'user' ? <CommanderAvatar /> : <ShipGirlAvatar />}
               <Card
                 style={{
-                  maxWidth: '80%',
+                  maxWidth: 'calc(100% - 54px)',
                   ...glass(m.role === 'user' ? 'rgba(230,244,255,0.7)' : 'rgba(255,255,255,0.75)'),
                 }}
                 styles={{ body: { padding: 12 } }}
