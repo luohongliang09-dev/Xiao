@@ -49,8 +49,13 @@ export async function updateDocument(id: number, file: File): Promise<IngestResu
   return data
 }
 
-export async function askQuestion(question: string): Promise<ChatResult> {
-  const { data } = await client.post('/chat', { question })
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export async function askQuestion(question: string, history?: ChatMessage[]): Promise<ChatResult> {
+  const { data } = await client.post('/chat', { question, history: history ?? [] })
   return data
 }
 

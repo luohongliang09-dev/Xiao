@@ -21,6 +21,7 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     question: str
+    history: list[dict] = []
 
 
 @app.get("/api/health")
@@ -83,7 +84,7 @@ def chat(req: ChatRequest):
     if not req.question.strip():
         raise HTTPException(400, "问题不能为空")
     try:
-        result = answer_question(req.question)
+        result = answer_question(req.question, req.history)
     except Exception as e:  # noqa: BLE001
         raise HTTPException(500, f"问答失败：{e}")
 

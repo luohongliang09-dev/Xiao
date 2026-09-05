@@ -18,7 +18,10 @@ def _load_system_prompt():
     return _DEFAULT_SYSTEM
 
 
-def answer_question(question):
+MAX_HISTORY = 8  # 多轮上下文最多携带最近 8 条消息
+
+
+def answer_question(question, history=None):
     q_emb = embed_one(question)
     results = _collection.query(
         query_embeddings=[q_emb],
@@ -36,12 +39,15 @@ def answer_question(question):
     system = _load_system_prompt()
     user_msg = f"参考资料：\n{context}\n\n问题：{question}"
 
+    messages = [{"role": "system", "content": system}]
+    for h in (history or [])[-MAX_HISTORY:]:
+        if isinstance(h, dict) and h.get("role") in ("user", "assistant") and h.get("content"):
+            messages.append({"role": h["role"], "content": h["content"]})
+    messages.append({"role": "user", "content": user_msg})
+
     resp = client.chat.completions.create(
         model=config.CHAT_MODEL,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user_msg},
-        ],
+        messages=messages,
         temperature=0.2,
     )
     answer = resp.choices[0].message.content

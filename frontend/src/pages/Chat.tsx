@@ -20,8 +20,17 @@ const glass = (rgba: string): CSSProperties => ({
   boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
 })
 
+const STORAGE_KEY = 'rag_chat_history'
+
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Msg[]>([])
+  const [messages, setMessages] = useState<Msg[]>(() => {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY)
+      return raw ? (JSON.parse(raw) as Msg[]) : []
+    } catch {
+      return []
+    }
+  })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -30,14 +39,23 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
+    } catch {
+      // 存储失败时忽略
+    }
+  }, [messages])
+
   const send = async () => {
     const q = input.trim()
     if (!q) return
     setInput('')
+    const history = messages.map((m) => ({ role: m.role, content: m.content }))
     setMessages((m) => [...m, { role: 'user', content: q }])
     setLoading(true)
     try {
-      const res = await askQuestion(q)
+      const res = await askQuestion(q, history)
       setMessages((m) => [...m, { role: 'assistant', content: res.answer, sources: res.sources }])
     } catch (e: any) {
       setMessages((m) => [
@@ -47,6 +65,11 @@ export default function ChatPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const clear = () => {
+    setMessages([])
+    setInput('')
   }
 
   return (
@@ -127,9 +150,14 @@ export default function ChatPage() {
             ...glass('rgba(255,255,255,0.55)'),
             padding: 8,
             borderRadius: 10,
+            display: 'flex',
+            gap: 8,
           }}
         >
-          <Space.Compact style={{ width: '100%' }}>
+          <Button onClick={clear} disabled={messages.length === 0 || loading}>
+            清空
+          </Button>
+          <Space.Compact style={{ flex: 1 }}>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
