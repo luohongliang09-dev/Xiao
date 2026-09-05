@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { CSSProperties, useEffect, useRef, useState } from 'react'
 import { Button, Card, Input, Space, Spin, Tag, Typography } from 'antd'
 import { askQuestion } from '../api/client'
 
@@ -7,6 +7,14 @@ interface Msg {
   content: string
   sources?: string[]
 }
+
+const glass = (rgba: string): CSSProperties => ({
+  background: rgba,
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  border: '1px solid rgba(255,255,255,0.45)',
+  boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+})
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Msg[]>([])
@@ -38,12 +46,34 @@ export default function ChatPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 140px)' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: 'calc(100vh - 140px)',
+        backgroundImage: 'url(/bg.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        borderRadius: 12,
+        padding: 16,
+        boxShadow: '0 6px 24px rgba(0,0,0,0.15)',
+      }}
+    >
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 16 }}>
         {messages.length === 0 && (
-          <Typography.Paragraph type="secondary" style={{ textAlign: 'center', marginTop: 80 }}>
-            在下方输入问题，我会基于你导入的资料回答
-          </Typography.Paragraph>
+          <div
+            style={{
+              ...glass('rgba(255,255,255,0.6)'),
+              padding: '16px 24px',
+              borderRadius: 10,
+              maxWidth: 420,
+              margin: '60px auto 0',
+              textAlign: 'center',
+            }}
+          >
+            <Typography.Text>在下方输入问题，我会基于你导入的资料回答</Typography.Text>
+          </div>
         )}
         {messages.map((m, i) => (
           <div
@@ -57,7 +87,7 @@ export default function ChatPage() {
             <Card
               style={{
                 maxWidth: '80%',
-                background: m.role === 'user' ? '#e6f4ff' : '#fff',
+                ...glass(m.role === 'user' ? 'rgba(230,244,255,0.7)' : 'rgba(255,255,255,0.75)'),
               }}
               styles={{ body: { padding: 12 } }}
             >
@@ -77,18 +107,27 @@ export default function ChatPage() {
         {loading && <Spin style={{ marginLeft: 12 }} />}
         <div ref={bottomRef} />
       </div>
-      <Space.Compact style={{ width: '100%' }}>
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onPressEnter={send}
-          placeholder="输入你的问题…"
-          disabled={loading}
-        />
-        <Button type="primary" onClick={send} loading={loading}>
-          发送
-        </Button>
-      </Space.Compact>
+      <div
+        style={{
+          ...glass('rgba(255,255,255,0.55)'),
+          padding: 8,
+          borderRadius: 10,
+        }}
+      >
+        <Space.Compact style={{ width: '100%' }}>
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onPressEnter={send}
+            placeholder="输入你的问题…"
+            disabled={loading}
+            style={{ background: 'transparent' }}
+          />
+          <Button type="primary" onClick={send} loading={loading}>
+            发送
+          </Button>
+        </Space.Compact>
+      </div>
     </div>
   )
 }

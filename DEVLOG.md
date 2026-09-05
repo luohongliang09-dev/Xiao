@@ -69,3 +69,11 @@
 - 环境坑：本机「安全删除」机制会拦截 `rm -rf` 和 Vite 打包时的 `dist/` 清理（`emptyDir` 报 safe-delete 错误）。清理数据目录用 Python `shutil.rmtree` 可绕过；开发模式（`npm run dev`）不受影响，仅 `npm run build` 受影响
 - 环境坑：Windows 的 `.bat` 文件**必须用纯 ASCII（英文）**，UTF-8 中文会被 cmd（GBK）误读导致乱码、命令截断（报 `'RAG' 不是内部或外部命令` 之类）。要么纯英文，要么用 GBK 编码写
 - 性能：生成模型从 `Qwen/Qwen3-8B` 换成 `THUDM/GLM-4-9B-0414`（硅基流动免费档 Qwen3-8B 拥堵，实测 7~22s 且波动大；GLM-4-9B 稳定 0.7~1.4s，质量一致），端到端从 ~10-15s 降到 ~1.8s
+
+## 2026-09-05 · 问答页背景板 + 毛玻璃聊天框
+
+- **做了什么**：
+  - 将 `壁纸.png` 复制到 `frontend/public/bg.png`（用 ASCII 名避免编码风险，原始壁纸留在项目根目录）
+  - `Chat.tsx` 重构样式：问答页容器设为背景图（cover/center），所有卡片（用户消息、秘书舰回复、空状态提示、输入框）改为半透明 + `backdrop-filter: blur(10px)` 毛玻璃效果
+- **效果**：背景板感觉，聊天框透明浮在壁纸之上
+- **阻塞项**：无
