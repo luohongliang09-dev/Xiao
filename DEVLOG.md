@@ -67,3 +67,4 @@
 - chromadb 1.5.9 集合名需 ≥3 字符；余弦距离用 `metadata={"hnsw:space": "cosine"}`（已验证生效）
 - 启动后端前确保 `backend/.env` 里的 `SILICONFLOW_API_KEY` 有效
 - 环境坑：本机「安全删除」机制会拦截 `rm -rf` 和 Vite 打包时的 `dist/` 清理（`emptyDir` 报 safe-delete 错误）。清理数据目录用 Python `shutil.rmtree` 可绕过；开发模式（`npm run dev`）不受影响，仅 `npm run build` 受影响
+- 环境坑：Windows 的 `.bat` 文件**必须用纯 ASCII（英文）**，UTF-8 中文会被 cmd（GBK）误读导致乱码、命令截断（报 `'RAG' 不是内部或外部命令` 之类）。要么纯英文，要么用 GBK 编码写
