@@ -1,5 +1,8 @@
 import { CSSProperties, useEffect, useRef, useState } from 'react'
 import { Button, Card, Input, Space, Spin, Tag, Typography } from 'antd'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks'
 import { askQuestion } from '../api/client'
 import { CommanderAvatar, ShipGirlAvatar } from '../components/PixelAvatar'
 
@@ -101,7 +104,9 @@ export default function ChatPage() {
                 }}
                 styles={{ body: { padding: 12 } }}
               >
-                <div style={{ whiteSpace: 'pre-wrap' }}>{m.content}</div>
+                <div className="md-content">
+                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{m.content}</ReactMarkdown>
+                </div>
                 {m.sources && m.sources.length > 0 && (
                   <div style={{ marginTop: 8 }}>
                     {m.sources.map((s) => (

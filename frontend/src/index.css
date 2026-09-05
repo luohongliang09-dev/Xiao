@@ -16,3 +16,47 @@
 .transparent-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.6);
 }
+
+/* Markdown 消息内容排版 */
+.md-content {
+  word-break: break-word;
+}
+.md-content p {
+  margin: 0 0 6px;
+}
+.md-content p:last-child {
+  margin-bottom: 0;
+}
+.md-content ol,
+.md-content ul {
+  margin: 0 0 6px;
+  padding-left: 20px;
+}
+.md-content ol {
+  list-style: decimal;
+}
+.md-content ul {
+  list-style: disc;
+}
+.md-content li {
+  margin-bottom: 2px;
+}
+.md-content strong {
+  font-weight: 600;
+}
+.md-content h1,
+.md-content h2,
+.md-content h3,
+.md-content h4 {
+  margin: 8px 0 4px;
+  font-size: 1em;
+  font-weight: 600;
+}
+.md-content code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.md-content a {
+  color: #1677ff;
+}
