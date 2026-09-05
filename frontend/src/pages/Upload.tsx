@@ -93,23 +93,25 @@ export default function UploadPage() {
   ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div>
-        <Typography.Title level={4} style={{ marginBottom: 4 }}>
-          导入资料
-        </Typography.Title>
-        <Typography.Text type="secondary">
-          支持 .txt / .md 文件，上传后自动解析、切片、向量化入库
-        </Typography.Text>
+    <div style={{ height: '100%', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 960, margin: '0 auto', padding: 24 }}>
+        <div>
+          <Typography.Title level={4} style={{ marginBottom: 4 }}>
+            导入资料
+          </Typography.Title>
+          <Typography.Text type="secondary">
+            支持 .txt / .md 文件，上传后自动解析、切片、向量化入库
+          </Typography.Text>
+        </div>
+        <Dragger accept=".txt,.md" showUploadList={false} beforeUpload={handleUpload} disabled={loading}>
+          <p className="ant-upload-drag-icon">
+            <InboxOutlined />
+          </p>
+          <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
+          <p className="ant-upload-hint">单个或多个 .txt / .md 文件</p>
+        </Dragger>
+        <Table rowKey="id" dataSource={docs} columns={columns} loading={loading} pagination={false} />
       </div>
-      <Dragger accept=".txt,.md" showUploadList={false} beforeUpload={handleUpload} disabled={loading}>
-        <p className="ant-upload-drag-icon">
-          <InboxOutlined />
-        </p>
-        <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
-        <p className="ant-upload-hint">单个或多个 .txt / .md 文件</p>
-      </Dragger>
-      <Table rowKey="id" dataSource={docs} columns={columns} loading={loading} pagination={false} />
     </div>
   )
 }

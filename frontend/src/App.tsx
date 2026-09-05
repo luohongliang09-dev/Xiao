@@ -9,7 +9,7 @@ function App() {
   const location = useLocation()
   const selected = location.pathname.startsWith('/chat') ? 'chat' : 'upload'
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
       <Header style={{ display: 'flex', alignItems: 'center' }}>
         <div style={{ color: '#fff', fontWeight: 600, marginRight: 32, fontSize: 18, whiteSpace: 'nowrap' }}>
           RAG 知识库问答
@@ -25,7 +25,7 @@ function App() {
           style={{ flex: 1, minWidth: 0 }}
         />
       </Header>
-      <Content style={{ padding: 24, maxWidth: 960, margin: '0 auto', width: '100%' }}>
+      <Content style={{ flex: 1, minHeight: 0 }}>
         <Routes>
           <Route path="/" element={<Upload />} />
           <Route path="/chat" element={<Chat />} />
