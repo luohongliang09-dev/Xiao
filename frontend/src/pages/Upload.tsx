@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Modal, Popconfirm, Space, Table, Typography, Upload, message } from 'antd'
-import { InboxOutlined, PictureOutlined } from '@ant-design/icons'
+import { FolderOpenOutlined, InboxOutlined, PictureOutlined } from '@ant-design/icons'
 import {
   Document,
   deleteDocument,
   describeImage,
+  ingestBatch,
   ingestFile,
   listDocuments,
   updateDocument,
@@ -62,6 +63,35 @@ export default function UploadPage() {
     return false
   }
 
+  const folderInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFolderSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target
+    const all = Array.from(input.files || [])
+    input.value = '' // 重置，便于重复选同一文件夹
+    if (all.length === 0) return
+    const supported = all.filter((f) => /\.(txt|md|docx|pdf|png|jpg|jpeg|webp)$/i.test(f.name))
+    if (supported.length === 0) {
+      message.warning('文件夹里没有支持的文档/图片格式')
+      return
+    }
+    setLoading(true)
+    try {
+      const results = await ingestBatch(supported)
+      const fail = results.filter((r) => r.error)
+      if (fail.length === 0) {
+        message.success(`文件夹导入完成：${results.length} 个文件全部成功`)
+      } else {
+        message.warning(`导入完成：${results.length - fail.length} 成功，${fail.length} 失败`)
+      }
+      await refresh()
+    } catch (e: any) {
+      message.error(`导入失败：${e?.response?.data?.detail || e.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleUpdate = async (id: number, file: File) => {
     setLoading(true)
     try {
@@ -115,6 +145,14 @@ export default function UploadPage() {
 
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
+      <input
+        ref={folderInputRef}
+        type="file"
+        multiple
+        style={{ display: 'none' }}
+        {...({ webkitdirectory: '' } as any)}
+        onChange={handleFolderSelect}
+      />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 960, margin: '0 auto', padding: 24 }}>
         <div>
           <Typography.Title level={4} style={{ marginBottom: 4 }}>
@@ -123,6 +161,11 @@ export default function UploadPage() {
           <Typography.Text type="secondary">
             文档（.txt / .md / .docx）走文字解析；PDF 和图片走 AI 视觉描述
           </Typography.Text>
+          <div style={{ marginTop: 8 }}>
+            <Button icon={<FolderOpenOutlined />} onClick={() => folderInputRef.current?.click()} disabled={loading}>
+              导入整个文件夹
+            </Button>
+          </div>
         </div>
         <Dragger accept=".txt,.md,.docx" showUploadList={false} beforeUpload={handleUpload} disabled={loading}>
           <p className="ant-upload-drag-icon">

@@ -68,6 +68,30 @@ async def ingest(file: UploadFile = File(...)):
         raise HTTPException(500, f"导入失败：{e}")
 
 
+@app.post("/api/ingest/batch")
+async def ingest_batch(files: list[UploadFile] = File(...)):
+    """批量导入（文件夹）：按扩展名自动分流到文字解析 / 视觉描述。"""
+    results = []
+    for file in files:
+        name = file.filename or "unnamed"
+        lower = name.lower()
+        if lower.endswith(".doc"):
+            results.append({"filename": name, "chunk_count": 0, "error": "旧版 .doc 不支持，请另存为 .docx"})
+            continue
+        if not lower.endswith((".txt", ".md", ".docx", ".pdf", ".png", ".jpg", ".jpeg", ".webp")):
+            results.append({"filename": name, "chunk_count": 0, "error": "不支持的格式"})
+            continue
+        raw = await file.read()
+        try:
+            if lower.endswith((".pdf", ".png", ".jpg", ".jpeg", ".webp")):
+                results.append(describe_and_store(name, raw))
+            else:
+                results.append(ingest_file(name, raw))
+        except Exception as e:  # noqa: BLE001
+            results.append({"filename": name, "chunk_count": 0, "error": str(e)})
+    return results
+
+
 @app.get("/api/documents")
 def list_documents():
     conn = get_conn()

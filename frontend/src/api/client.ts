@@ -32,6 +32,13 @@ export async function ingestFile(file: File): Promise<IngestResult> {
   return data
 }
 
+export async function ingestBatch(files: File[]): Promise<IngestResult[]> {
+  const form = new FormData()
+  files.forEach((f) => form.append('files', f))
+  const { data } = await client.post('/ingest/batch', form)
+  return data
+}
+
 export async function listDocuments(): Promise<Document[]> {
   const { data } = await client.get('/documents')
   return data
